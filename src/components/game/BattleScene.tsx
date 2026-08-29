@@ -28,7 +28,7 @@ export function BattleScene() {
 
   const hero = useRef<Side>(makeSide(HERO));
   const ally = useRef<Side>(makeSide(ALLY));
-  const enemy = useRef<Side>(makeSide(ENEMIES[0]));
+  const enemy = useRef<Side>(makeSide(ENEMIES[0]!));
   const waveRef = useRef(1);
   const hitId = useRef(0);
   const pausedRef = useRef(false);
@@ -77,7 +77,7 @@ export function BattleScene() {
             setTimeout(() => {
               waveRef.current += 1;
               setWave(waveRef.current);
-              const next = ENEMIES[(waveRef.current - 1) % ENEMIES.length];
+              const next = ENEMIES[(waveRef.current - 1) % ENEMIES.length]!;
               const boost = 1 + Math.floor((waveRef.current - 1) / ENEMIES.length) * 0.6;
               enemy.current = makeSide({
                 ...next,
@@ -103,7 +103,7 @@ export function BattleScene() {
           const special = foe.charge % 5 === 0;
           foe.anim = special ? "special" : "attack";
           foe.animLeft = special ? 0.9 : 0.6;
-          const target = alive[Math.floor(Math.random() * alive.length)];
+          const target = alive[Math.floor(Math.random() * alive.length)]!;
           const dmg = Math.round(
             foe.fighter.attack * (special ? 2 : 1) * (0.85 + Math.random() * 0.3),
           );
@@ -130,7 +130,7 @@ export function BattleScene() {
     ally.current = makeSide(ALLY);
     waveRef.current = 1;
     setWave(1);
-    enemy.current = makeSide(ENEMIES[0]);
+    enemy.current = makeSide(ENEMIES[0]!);
     setLog(["A batalha começou!"]);
     setPaused(false);
   };
