@@ -69,11 +69,10 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   const pull = useCallback<Ctx["pull"]>(() => {
     if (state.gems < PULL_COST) return null;
     const character = rollCharacter();
-    let duplicate = false;
+    const duplicate = Boolean(state.heroes[character.id]);
     setState((s) => {
       if (s.gems < PULL_COST) return s;
       const existing = s.heroes[character.id];
-      duplicate = Boolean(existing);
       const heroes = { ...s.heroes };
       heroes[character.id] = existing
         ? { ...existing, shards: existing.shards + 1 }
@@ -81,7 +80,7 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
       return { ...s, gems: s.gems - PULL_COST, heroes };
     });
     return { character, duplicate };
-  }, [state.gems]);
+  }, [state.gems, state.heroes]);
 
   const toggleParty = useCallback((id: string) => {
     setState((s) => {
