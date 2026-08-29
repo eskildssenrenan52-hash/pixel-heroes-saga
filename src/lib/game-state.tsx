@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { CHAR_BY_ID, xpToNext, type Character } from "./characters";
+import { CHAR_BY_ID, rollCharacter, xpToNext, type Character } from "./characters";
 
 export type OwnedHero = { id: string; level: number; xp: number; shards: number };
 
@@ -67,23 +67,21 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const pull = useCallback<Ctx["pull"]>(() => {
-    let result: { character: Character; duplicate: boolean } | null = null;
+    if (state.gems < PULL_COST) return null;
+    const character = rollCharacter();
+    let duplicate = false;
     setState((s) => {
       if (s.gems < PULL_COST) return s;
-      // import dinâmico evitado: rollCharacter é puro
-      const character = rollFromModule();
       const existing = s.heroes[character.id];
-      result = { character, duplicate: Boolean(existing) };
+      duplicate = Boolean(existing);
       const heroes = { ...s.heroes };
-      if (existing) {
-        heroes[character.id] = { ...existing, shards: existing.shards + 1 };
-      } else {
-        heroes[character.id] = { id: character.id, level: 1, xp: 0, shards: 0 };
-      }
+      heroes[character.id] = existing
+        ? { ...existing, shards: existing.shards + 1 }
+        : { id: character.id, level: 1, xp: 0, shards: 0 };
       return { ...s, gems: s.gems - PULL_COST, heroes };
     });
-    return result;
-  }, []);
+    return { character, duplicate };
+  }, [state.gems]);
 
   const toggleParty = useCallback((id: string) => {
     setState((s) => {
@@ -129,12 +127,6 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   );
 
   return <GameContext.Provider value={value}>{children}</GameContext.Provider>;
-}
-
-// evita import circular na assinatura acima
-import { rollCharacter } from "./characters";
-function rollFromModule() {
-  return rollCharacter();
 }
 
 export function useGame() {
